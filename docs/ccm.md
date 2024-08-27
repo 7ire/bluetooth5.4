@@ -1,5 +1,12 @@
 # Counter with CBC-MAC (CCM)
 
++ Intro breve
++ Perché la scelta di authenticate-then-encrypt
++ Come viene superato il limite di avere solo 1 chiave
+  + Spiegare il processo di CBC-MAC e di come CTR mode diventa un cifrario a flusso
+
+## Intro
+
 - Mode operation for cryptographics block chipers.
 - **Authenticated Encryption**, provide:
   - authentication
@@ -22,3 +29,7 @@ These two primitives are applied in an **authenticate-then-encrypt**:
 2. [ message + MAC ] == encrypted ==> using **counte mode**
 
 CBC-MAC(Key) == CTR mode(Key)
+
+### Why Encrypt then MAC
+
+Becase ACL link layer only privide 1 session key (to be more specific a SKD - Secret Key Derivation) so is not possible to use MAC then Encrypt and to overcome this problem, the CTR mode is use to create a **strem cipher** that use the same SK BUT it is different each packet.
