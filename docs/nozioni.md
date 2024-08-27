@@ -6,7 +6,7 @@
 2. Unire nozioni di BT con quelle apprese nel corso
    - Obiettivo: superare il limite della singola chiave di sessione per avere AEAD
    - CCM
-3. Intro 5.4
+3. Intro 5.4 - Quali problemi mira a risolvere
    - Periodic Advertising
    - PAwR (with Response)
 4. Encrypt PAwR
