@@ -74,10 +74,9 @@ I bit che specificano quali sono le funzionalità di sicurezza supportate da un 
 
 - **SC**, richiedere l'utilizzo AGGIUNGI LINK FASE **LE Secure Connection** pairing.
 
-
-    > [!NOTE]
-    > Solo se entrambi i dispositivi richiedono l'utilizzo di LE Secure Connection verrà utilizzata.
-    > Se anche solo 1 dispositivo non richiede l'utilizzo, allora verrà usato i metodi di **Legacy Pairing**.
+> [!NOTE]
+> Solo se entrambi i dispositivi richiedono l'utilizzo di LE Secure Connection verrà utilizzata.
+> Se anche solo 1 dispositivo non richiede l'utilizzo, allora verrà usato i metodi di **Legacy Pairing**.
 
 - **KP**, TODO:
 
