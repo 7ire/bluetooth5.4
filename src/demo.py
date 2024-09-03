@@ -222,3 +222,9 @@ try:
 except AssertionError as e:
     print(e)
     print("L'attacco MitM è stato rilevato!")
+
+# Derivazione delle chiavi partendo da LTK
+
+# BL/EDR - If at least one device sets CT2 = 0
+# https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-54/out/en/host/security-manager-specification.html#UUID-adafa963-422d-a0bf-2808-2711d2f1cbda
+ILK = h6(LTK, "tmp1")

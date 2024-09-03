@@ -1,6 +1,9 @@
 from Crypto.Hash import CMAC
 from Crypto.Cipher import AES
 
+# KeyID "btle" in ASCII
+keyID = bytes.fromhex('62746C65')
+
 def f4(U: bytes, V: bytes, X: bytes, Z: bytes) -> bytes:
     # Verifica i requisiti di sicurezza
     assert len(U) == 32, "U deve essere di 256 bit (32 byte)"    # U is 256bits
@@ -35,9 +38,6 @@ def f5(W: bytes, N1: bytes, N2: bytes, A1: bytes, A2: bytes) -> tuple:
     t_cmac = CMAC.new(SALT, ciphermod=AES)
     t_cmac.update(W)
     T = t_cmac.digest()  # T e' la derived key (128 bits)
-
-    # KeyID "btle" in ASCII
-    keyID = bytes.fromhex('62746C65')
 
     # Length (256 bits, 2 bytes)
     length = bytes.fromhex('0100')
@@ -105,3 +105,17 @@ def g2(U: bytes, V: bytes, X: bytes, Y: bytes) -> int:
 
     # Restituisce il valore per il confronto
     return compare_value
+
+def h6(W: bytes, keyID: bytes) -> bytes:
+    # Verifica i requisiti di sicurezza
+    assert len(W) == 16, "W deve essere di 128 bit (16 byte)"
+    assert len(keyID) == 4, "keyID deve essere di 32 bit (4 byte)"
+
+    # Creazione dell'oggetto CMAC con la chiave W e AES come cifratura
+    cobj = CMAC.new(W, ciphermod=AES)
+    
+    # Calcolo della MAC usando il keyID come messaggio
+    cobj.update(keyID)
+    
+    # Ritorna il valore calcolato (128 bit)
+    return cobj.digest()
