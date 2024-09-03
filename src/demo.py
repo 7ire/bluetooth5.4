@@ -224,7 +224,16 @@ except AssertionError as e:
     print("L'attacco MitM è stato rilevato!")
 
 # Derivazione delle chiavi partendo da LTK
+print("\n\n")
+print("==== Derivazione delle chiavi partendo da LTK ====")
+# Ripristino il pairing per la demo
+numeric_comparison(alice, bob)
+LTK = ltk_generation(alice, bob)
+print(f"Alice e Bob condividono la stessa LTK = {LTK.hex()}")
 
 # BL/EDR - If at least one device sets CT2 = 0
 # https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-54/out/en/host/security-manager-specification.html#UUID-adafa963-422d-a0bf-2808-2711d2f1cbda
 ILK = h6(LTK, "tmp1")
+BR_EDR_link_key = h6(ILK, "lebr")
+
+print(f"BR/EDR Link Key = {BR_EDR_link_key.hex()}")
