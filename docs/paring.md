@@ -70,7 +70,19 @@ I bit che specificano quali sono le funzionalità di sicurezza supportate da un 
 
 - **MitM**, il device richiedere la protezione da attacchi "Man-in-the-Middle".
 
-    TODO: Bluetooth Core Specification v4.2, Vol1, Part A, 5.2.3.
+    Per prevenire attacchi MITM, il Secure Simple Pairing offre due metodi numerici: 
+    
+    - **numeric comparison**
+    - **Passkey**
+
+    Se il Secure Simple Pairing utilizzasse numeri decimali a 16 cifre, l'usabilità sarebbe la stessa dell'utilizzo dell'accoppiamento tradizionale con un PIN a 16 cifre decimali. 
+    In questo caso, la probabilità che un MITM riesca a inserire le proprie chiavi di collegamento è di 1 su 10^16 = 2^53 istanze, che è una probabilità inutilmente bassa.
+
+> [!NOTE]
+> *Secure Simple Pairing protects the user from MITM attacks with a goal of offering a 1 in 1,000,000 chance that a MITM could mount a successful attack.*
+> *The strength of the MITM protections was selected to minimize the user impact by using a six digit number for numerical comparison and Passkey entry.* 
+> *This level of MITM protection was selected since, in most cases, users can be alerted to the potential presence of a MITM attacker when the connection process fails as a result of a failed MITM attack* 
+> *While most users feel that provided that they have not compromised their passkey, a 4-digit key is sufficient for authentication (i.e. bank card PIN codes), the use of six digits allows Secure Simple Pairing to be FIPS compliant and this was deemed to have little perceivable usability impact.*
 
 - **SC**, richiedere l'utilizzo AGGIUNGI LINK FASE **LE Secure Connection** pairing.
 
@@ -88,7 +100,7 @@ I bit che specificano quali sono le funzionalità di sicurezza supportate da un 
 
 <br />
 
-Con lo scambio di queste informazioni, soprattutto quelle contenute nel byte **IO Cap** (TODO: aggiungi link), i dispositivi possono scegliere quale **pairing method** e **key generation** (TODO: aggiungi link) utilizzare.
+Con lo scambio di queste informazioni, soprattutto quelle contenute nel byte **IO Cap**, i dispositivi possono scegliere quale **pairing method** e **key generation** utilizzare.
 
 ## 2. Key Generation Methods
 
@@ -105,7 +117,7 @@ Queste due categorie ragruppano i seguenti metodi per la **generazione della chi
 Bluetooth LE Legacy Pairing:
 
 - **Just Works**
-- **Passkey**
+- **Passkey** (**Secure Simple Pairing*)
 - **Out-of-Band(OOB)**
 
 Bluetooth LE Secure Pairing:
@@ -129,9 +141,6 @@ La fase di decisione sul metodo di generazione della chiave segue i seguenti ste
     ![Secure Paring Key Generation matrix](./assets/le_sc_key_gen_matrix.png)
 
     ***Check MITM** significa ignorare **OOB Data Flag***.
-
-    >[!NOTE]
-    > TODO: aggiungere un commento perchè sia necessario avere almeno uno dei due bit valorizzati.
 
 3. (LE Legacy Pairing) **Selezionare il metodo di generazione di chiave in base alle IO Cap**.
 
@@ -157,7 +166,7 @@ La fase di decisione sul metodo di generazione della chiave segue i seguenti ste
 
 2. **Mconfirm** e **Sconfirm**
 
-    **Mconfirm** e **Sconfirm** sono valori a 128-bit calcolati tramite una funzione *c1* che prene come parametri:
+    **Mconfirm** e **Sconfirm** sono valori a 128-bit calcolati tramite una funzione [*c1*](https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-54/out/en/host/security-manager-specification.html) (2.2.3) che prene come parametri:
 
     - **TK**
     - **Mrand** per *Mconfirm*; o **Srand** per *Sconfirm* calcolo
@@ -167,8 +176,6 @@ La fase di decisione sul metodo di generazione della chiave segue i seguenti ste
     - **Initiating device address**
     - **Responding device address type**
     - **Responding device address**
-
-    TODO: aggiungere specifiche Bluetooth Core Spec V4.2, Vol.3, Part H, Section 2.2.3.
 
 3. **Verifica**
 
@@ -185,12 +192,10 @@ La fase di decisione sul metodo di generazione della chiave segue i seguenti ste
 
 4. **STK Generation**
 
-    La chiave viene generata da una funzione s1 che prende come parametri:
+    La chiave viene generata da una funzione [s1](https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-54/out/en/host/security-manager-specification.html) (2.2.4) che prende come parametri:
 
     - **TK**
     - **Srand**
     - **Mrand**
-
-    TODO: aggingere specifiche Bluetooth Core Spec V4.2, Vol.3, Part H, Section 2.2.4.
 
 ![Legay Paring Passkey](./assets/lp_passkey.jpg)
