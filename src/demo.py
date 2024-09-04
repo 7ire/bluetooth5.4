@@ -1,11 +1,16 @@
 from bluetooth.bt_device import BTDevice
 from bluetooth.bt_crypto_toolbox import *
+from bluetooth.bt_ccm import aes_ccm_encrypt, aes_ccm_decrypt_with_key
 import os
+import time
 
 mode = "DEBUG"
 
 OOB = 0
 AuthReq = 112 # 01110000
+MaxKeySize = 3
+
+assert MaxKeySize > 0, "MaxKeySize deve essere > 0"
 
 # Funzione di utilità per convertire un indirizzo Bluetooth da stringa a bytes
 def bt_address_to_bytes(bt_address: str) -> bytes:
@@ -168,6 +173,56 @@ def ltk_generation(alice: BTDevice, bob: BTDevice, mitm: bool = False, Nb_mitm: 
 
     return LTK_a
 
+# =====================
+# #   A T T A C K s   #
+# =====================
+
+# Funzione per ridurre l'entropia della chiave AES
+def entropy_reduction(key: bytes, MaxKeySize: int) -> bytes:
+    # Taglia la chiave originale alla lunghezza specificata da MaxKeySize
+    reduced_key = key[:MaxKeySize]
+    
+    # Espandi la chiave ridotta a 16 byte ripetendola o aggiungendo padding
+    expanded_key = reduced_key.ljust(16, b'\x00')  # Pad con 0x00 fino a 16 byte
+    
+    if "DEBUG" == mode: 
+        print(f"Chiave originale: {key.hex()}")
+        print(f"Chiave ridotta (MaxKeySize = {MaxKeySize}): {reduced_key.hex()}")
+        print(f"Chiave espansa per AES: {expanded_key.hex()}")
+    
+    return expanded_key
+
+# Funzione di brute force per trovare la chiave corretta
+def brute_force_ccm(ciphertext, mac, nonce, auth_data, MaxKeySize, original_plaintext):
+    print("\nInizio brute force per AES-CCM encryption...")
+    start_time = time.time()
+
+    found_key = None
+    # Proviamo ogni possibile chiave di `MaxKeySize` byte (256^MaxKeySize combinazioni)
+    for i in range(256**MaxKeySize):
+        test_key = i.to_bytes(MaxKeySize, byteorder='big')
+        test_key_expanded = test_key.ljust(16, b'\x00')  # Espandi la chiave per AES
+
+        try:
+            # Tentativo di decifratura con la chiave ridotta
+            decrypted_text = aes_ccm_decrypt_with_key(test_key_expanded, nonce, ciphertext, auth_data, mac)
+            
+            # Se la decrittazione ha successo e il testo corrisponde, abbiamo trovato la chiave
+            if decrypted_text == original_plaintext:
+                found_key = test_key_expanded
+                break
+        except (ValueError, KeyError):
+            # Se c'è un errore di autenticazione, continuiamo con la prossima chiave
+            continue
+
+    end_time = time.time()
+    brute_force_time = end_time - start_time
+    if found_key:
+        print(f"Chiave trovata: {found_key.hex()}, Tempo brute force: {brute_force_time:.6f} secondi")
+    else:
+        print("Chiave non trovata.")
+    
+    return found_key, brute_force_time
 
 # ============================
 # #   M A I N  S C R I P T   #
@@ -236,4 +291,21 @@ print(f"Alice e Bob condividono la stessa LTK = {LTK.hex()}")
 ILK = h6(LTK, "tmp1")
 BR_EDR_link_key = h6(ILK, "lebr")
 
-print(f"BR/EDR Link Key = {BR_EDR_link_key.hex()}")
+# AES-CCM
+key = LTK
+key = entropy_reduction(key, MaxKeySize)
+nonce = os.urandom(12)  # CCM usa tipicamente nonce da 12 byte
+plaintext = b"Questo e' un messaggio segreto."
+auth_data = b"Autenticazione"
+
+# Risultato
+ciphertext, mac = aes_ccm_encrypt(key, nonce, plaintext, auth_data)
+print("Ciphertext:", ciphertext.hex())
+print("MAC:", mac.hex())
+
+# Esegui brute force per trovare la chiave e decriptare il messaggio
+found_key, brute_force_time = brute_force_ccm(ciphertext, mac, nonce, auth_data, MaxKeySize, plaintext)
+
+# Se la chiave è stata trovata, stampa il messaggio in chiaro
+if found_key:
+    print("Messaggio decriptato correttamente:", plaintext.decode())
