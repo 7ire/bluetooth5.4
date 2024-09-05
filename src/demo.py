@@ -1,6 +1,7 @@
 from bluetooth.bt_device import BTDevice
 from bluetooth.bt_crypto_toolbox import *
 from bluetooth.bt_ccm import aes_ccm_encrypt, aes_ccm_decrypt_with_key
+from Crypto.Random import get_random_bytes
 import os
 import time
 
@@ -36,8 +37,8 @@ def just_work(alice: BTDevice, bob: BTDevice, mitm: bool = False):
     assert alice.dhkey == bob.dhkey, "Alice e Bob non condividono la stessa chiave Diffie-Hellman!"
 
     # 2. Selezionare per Alice e Bob un nonce a 128bits
-    bob.nonce = os.urandom(16)
-    alice.nonce = os.urandom(16)
+    bob.nonce = get_random_bytes(16)
+    alice.nonce = get_random_bytes(16)
 
     # 3. Calcolare il commit di Bob (Challenge/Response)
     Z = bytes([0x00])  # Z è 0 per Numeric Comparison
@@ -52,7 +53,7 @@ def just_work(alice: BTDevice, bob: BTDevice, mitm: bool = False):
     Na = alice.nonce
 
     # 6. Condividere il nonce di Bob e controllare il commit di Bob
-    Nb = os.urandom(16) if mitm else bob.nonce
+    Nb = get_random_bytes(16) if mitm else bob.nonce
 
     # Simulazione di un attacco MitM da parte di Eve, che sostituisce il commit di Bob
     # con un commit falso Cb_mitm
@@ -85,8 +86,8 @@ def numeric_comparison(alice: BTDevice, bob: BTDevice, mitm: bool = False):
     assert alice.dhkey == bob.dhkey, "Alice e Bob non condividono la stessa chiave Diffie-Hellman!"
 
     # 2. Selezionare per Alice e Bob un nonce a 128bits
-    bob.nonce = os.urandom(16)
-    alice.nonce = os.urandom(16)
+    bob.nonce = get_random_bytes(16)
+    alice.nonce = get_random_bytes(16)
 
     # 3. Calcolare il commit di Bob (Challenge/Response)
     Z = bytes([0x00])  # Z è 0 per Numeric Comparison
@@ -101,7 +102,7 @@ def numeric_comparison(alice: BTDevice, bob: BTDevice, mitm: bool = False):
     Na = alice.nonce
 
     # 6. Condividere il nonce di Bob e controllare il commit di Bob
-    Nb = os.urandom(16) if mitm else bob.nonce
+    Nb = get_random_bytes(16) if mitm else bob.nonce
 
     # Simulazione di un attacco MitM da parte di Eve, che sostituisce il commit di Bob
     # con un commit falso Cb_mitm
@@ -294,7 +295,7 @@ BR_EDR_link_key = h6(ILK, "lebr")
 print("\n\n")
 print("==== Cifratura di un messaggio - AES-CCM ====")
 key = LTK  # Utilizzo la chiave di sessione LE-LTK come chiave per AES-CCM
-nonce = os.urandom(12)  # CCM usa tipicamente nonce da 12 byte
+nonce = get_random_bytes(12)  # CCM usa tipicamente nonce da 12 byte
 plaintext = b"Questo e' un messaggio segreto."
 auth_data = b"Autenticazione"
 ciphertext, mac = aes_ccm_encrypt(key, nonce, plaintext, auth_data)
@@ -303,11 +304,11 @@ print("\t - Ciphertext:", ciphertext.hex())
 print("\t - MAC:", mac.hex())
 
 # 4. Attacco - Brute Force per trovare la chiave AES-CCM
-if 1 == MaxKeySize:
+if 2 >= MaxKeySize:
     print("\n\n")
     print("==== KNOB - Brute Force per trovare la chiave AES-CCM ====")
     key = LTK  # Utilizzo la chiave di sessione LE-LTK come chiave per AES-CCM
-    nonce = os.urandom(12)  # CCM usa tipicamente nonce da 12 byte
+    nonce = get_random_bytes(12)  # CCM usa tipicamente nonce da 12 byte
     plaintext = b"Questo e' un messaggio segreto."
     auth_data = b"Autenticazione"
     knob(key, nonce, auth_data, plaintext)
