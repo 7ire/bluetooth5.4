@@ -160,9 +160,14 @@ def ltk_generation(alice: BTDevice, bob: BTDevice, Na: bytes, Nb: bytes):
 # #   A T T A C K s   #
 # =====================
 
-def knob(key: bytes, nonce: bytes, auth_data: bytes, plaintext: bytes):
+def knob(key: bytes, nonce: bytes, auth_data: bytes, plaintext: bytes, bt5_1_above: bool = False):
     # Funzione per ridurre l'entropia della chiave AES
     def entropy_reduction(key: bytes, MaxKeySize: int) -> bytes:
+        if bt5_1_above:
+            try:
+                assert MaxKeySize >= 7, f"MaxKeySize ({MaxKeySize} byte) è troppo basso. Deve essere almeno 7 byte per evitare l'attacco KNOB."
+            except AssertionError as e:
+                MaxKeySize = 7
         # Taglia la chiave originale alla lunghezza specificata da MaxKeySize
         reduced_key = key[:MaxKeySize]
         
@@ -217,12 +222,13 @@ def knob(key: bytes, nonce: bytes, auth_data: bytes, plaintext: bytes):
     print("\t - Ciphertext:", ciphertext.hex())
     print("\t - MAC:", mac.hex())
 
-    # Esegui brute force per trovare la chiave e decriptare il messaggio
-    found_key, brute_force_time = brute_force_ccm(ciphertext, mac, nonce, auth_data, plaintext)
+    if not bt5_1_above:
+        # Esegui brute force per trovare la chiave e decriptare il messaggio
+        found_key, brute_force_time = brute_force_ccm(ciphertext, mac, nonce, auth_data, plaintext)
 
-    # Se la chiave è stata trovata, stampa il messaggio in chiaro
-    if found_key:
-        print("Messaggio decriptato correttamente:", plaintext.decode())
+        # Se la chiave è stata trovata, stampa il messaggio in chiaro
+        if found_key:
+            print("Messaggio decriptato correttamente:", plaintext.decode())
 
 
 
@@ -313,6 +319,11 @@ if 2 >= MaxKeySize:
     auth_data = b"Autenticazione"
     knob(key, nonce, auth_data, plaintext)
 
-
-
-
+# 5. Fix KNOB - Aumento del'entropia a 7 della chiave
+print("\n\n")
+print("==== KNOB - Aumento dell'entropia della chiave a 7 byte ====")
+key = LTK  # Utilizzo la chiave di sessione LE-LTK come chiave per AES-CCM
+nonce = get_random_bytes(12)  # CCM usa tipicamente nonce da 12 byte
+plaintext = b"Questo e' un messaggio segreto."
+auth_data = b"Autenticazione"
+knob(key, nonce, auth_data, plaintext, True)
