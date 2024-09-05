@@ -326,4 +326,5 @@ key = LTK  # Utilizzo la chiave di sessione LE-LTK come chiave per AES-CCM
 nonce = get_random_bytes(12)  # CCM usa tipicamente nonce da 12 byte
 plaintext = b"Questo e' un messaggio segreto."
 auth_data = b"Autenticazione"
+# Imposto il parametro `bt5_1_above` a True per evitare l'attacco KNOB, simulando un dispositivo BT 5.1 o superiore
 knob(key, nonce, auth_data, plaintext, True)
